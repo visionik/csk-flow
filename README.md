@@ -8,7 +8,8 @@ no separate console tool to race against.
 
 See `SPEC.md` for the full design. Working now: flash + chip-id +
 console-with-`--until`, incremental skip (`--force` to override), `--json`
-output, and `--no-console` (flash-only). Not yet done: the persistent daemon.
+output, `--no-console` (flash-only), and a persistent-endpoint daemon
+(`csk-flowd`). The flash/console core is shared between the two in `src/ops.c`.
 
 ## The cable reality (tested 2026-11-07)
 
@@ -62,3 +63,25 @@ Flags:
 build/csk-flow --json --no-console -s /dev/cu.PL2303G-USBtoUART2110 -C venus \
     0x100000 dsp_firmware.bin 0x0 zephyr.bin
 ```
+
+## Daemon (csk-flowd)
+
+A persistent endpoint: one long-lived process holding the serial port,
+serving newline-delimited commands over a Unix socket and replying with one
+JSON line each. Lets an orchestrator drive flashing without re-spawning the
+CLI.
+
+Because the C62 cable has no reset lines, the daemon does **not** make
+flashing unattended — a `flash` still needs a human to hold BOOT + power on,
+and a `console` needs a power-cycle. Its value is the single endpoint and
+structured results.
+
+```sh
+build/csk-flowd -S /tmp/cskd.sock -s /dev/cu.PL2303G-USBtoUART2110 -C venus &
+printf 'flash --force 0x100000 dsp_firmware.bin 0x0 zephyr.bin\n' | nc -U /tmp/cskd.sock
+printf 'console --until "Booting Zephyr OS" --timeout 90000\n' | nc -U /tmp/cskd.sock
+printf 'quit\n' | nc -U /tmp/cskd.sock
+```
+
+Commands: `flash [--force] <addr> <file> ...`, `console [--until REGEX]
+[--timeout MS]`, `ping`, `quit`.

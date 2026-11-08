@@ -25,11 +25,19 @@ foreach(comp liberrors libio liblog libportable libserial libslip
     add_subdirectory(${CSKBURN_DIR}/${comp} ${CMAKE_BINARY_DIR}/${comp})
 endforeach()
 
-add_executable(csk-flow src/main.c src/md5.c)
+# Shared flash/console core (CLI + daemon).
+add_library(csk-ops STATIC src/ops.c src/md5.c)
 # cskburn_serial links serial/io/etc. transitively; listing them again warns.
-target_link_libraries(csk-flow cskburn_serial)
-target_include_directories(csk-flow PRIVATE
+target_link_libraries(csk-ops cskburn_serial)
+target_include_directories(csk-ops PUBLIC
+    src
     ${CSKBURN_DIR}/libcskburn_serial/include
     ${CSKBURN_DIR}/libserial/include
     ${CSKBURN_DIR}/libio/include
     ${CSKBURN_DIR}/liblog/include)
+
+add_executable(csk-flow src/main.c)
+target_link_libraries(csk-flow csk-ops)
+
+add_executable(csk-flowd src/daemon.c)
+target_link_libraries(csk-flowd csk-ops)
