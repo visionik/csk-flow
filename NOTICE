@@ -1,0 +1,12 @@
+csk-flow
+Copyright 2026 visionik
+
+Licensed under the Apache License, Version 2.0 (the "License"); see LICENSE.
+
+This tool links libcskburn_serial from LISTENAI/cskburn
+(https://github.com/LISTENAI/cskburn), Copyright LISTENAI, licensed under the
+Apache License, Version 2.0. cskburn's source is not included here; it is
+built separately and linked.
+
+The MD5 implementation in src/md5.c is a public-domain reference
+implementation by Alexander Peslyak.

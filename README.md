@@ -85,3 +85,9 @@ printf 'quit\n' | nc -U /tmp/cskd.sock
 
 Commands: `flash [--force] <addr> <file> ...`, `console [--until REGEX]
 [--timeout MS]`, `ping`, `quit`.
+
+## License
+
+[Apache-2.0](LICENSE). See `NOTICE` for attribution. csk-flow links
+Apache-2.0 `libcskburn_serial` (LISTENAI/cskburn) without bundling it;
+`src/md5.c` is public domain.
