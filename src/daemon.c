@@ -36,7 +36,11 @@ static const char *g_port;
 static cskburn_serial_chip_t g_chip = CHIP_VENUS;
 static uint32_t g_flash_baud = DEFAULT_FLASH_BAUD;
 
-/* Split a command line in place into argv; returns argc. */
+/*
+ * Split a command line in place into argv; returns argc. Supports double
+ * quotes so a multi-word regex can be passed as --until "a b c". The quotes
+ * are stripped and the enclosed run (spaces included) becomes one token.
+ */
 static int tokenize(char *line, char **argv, int max)
 {
 	int argc = 0;
@@ -46,9 +50,17 @@ static int tokenize(char *line, char **argv, int max)
 			*p++ = '\0';
 		if (*p == '\0')
 			break;
-		argv[argc++] = p;
-		while (*p && *p != ' ' && *p != '\t')
-			p++;
+		if (*p == '"') {
+			argv[argc++] = ++p; /* token starts after the quote */
+			while (*p && *p != '"')
+				p++;
+			if (*p == '"')
+				*p++ = '\0'; /* close quote -> terminator */
+		} else {
+			argv[argc++] = p;
+			while (*p && *p != ' ' && *p != '\t')
+				p++;
+		}
 	}
 	return argc;
 }
