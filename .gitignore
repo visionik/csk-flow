@@ -1,0 +1,4 @@
+build/
+bin2c.py
+cskburn-src/
+*.local
